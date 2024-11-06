@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.exc import OperationalError, IntegrityError
 from Funções import Horarios
+import pandas as pd
 
 from sqlalchemy import select, text
 import csv
@@ -33,7 +34,6 @@ class Query():
             async with self.async_session() as conn:
                 inserir_dados = text(f"select senha from usuarios where nome_usuario = '{consulta}'")
                 result = await conn.execute(inserir_dados)
-                
                 for row in result:
                     return self.tratar_resultado_de_consulta(row)
         except OperationalError as e:
@@ -105,10 +105,20 @@ class consulta:
     async def Consultar_Estoque(self, campo="codigo_interno", consulta=None):
         try:
             async with self.async_session() as conn:
-                inserir_dados = text(f"select * from estoque where {campo} = '{consulta}'")
+                inserir_dados = text(f"select descricao, codigo_interno, ean, quantidade from estoque where {campo} = '{consulta}'")
                 result = await conn.execute(inserir_dados)
                 for row in result:
-                    return self.tratar_resultado_de_consulta(row)
+                    with open("resultado.csv", "w") as arquivo:
+                        arquivo.write(f'descricao,codigo_interno,ean,quantidade\n{self.tratar_resultado_de_consulta(row)}')
+                    df = pd.read_csv('resultado.csv')
+                    descricao = df['descricao']
+                    codigo_interno = df['codigo_interno']
+                    if codigo_interno[0] == " ''":
+                        codigo_interno = tuple("<desconhecido>")
+
+                    ean = df['ean']
+                    quantidade = df['quantidade']
+                    return descricao[0], codigo_interno[0], ean[0], quantidade[0]
         except OperationalError as e:
             return(f"Erro de conexão ou sintaxe SQL: {e}")
         except IntegrityError as e:
@@ -119,8 +129,9 @@ class consulta:
             return(f"Erro inesperado: {e}")
 
     def tratar_resultado_de_consulta(self, dado):
+
         self.dado = str(dado)
-        return self.dado
+        return self.dado[2:-3]
             
 
 
@@ -147,7 +158,7 @@ if __name__ == '__main__':
 
     async def main():
         consultar = consulta()
-        resultado = await consultar.Consultar_Estoque(campo="descricao", consulta="teste")
-        print(resultado)
+        resultado = await consultar.Consultar_Estoque(consulta="123456")
+        print(resultado[1])
     asyncio.run(main())
 

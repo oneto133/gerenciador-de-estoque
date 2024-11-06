@@ -1,4 +1,6 @@
 from tkinter import *
+import consultar_estoque
+from Funções import Graficos
 
 class Tela:
     def __init__(self, janela):
@@ -60,10 +62,16 @@ class Tela:
         self.logistica.bind("<Button-1>", self.Logística)
         self.pontinhos_do_frame.bind("<Button-1>", self.Opções)
 
-        
+    def fechar_programa(self):
+        self.janela.quit()
+        self.janela.destroy()
 
     def Consultar_Estoque(self, event):
         print("Consultar")
+        self.janela.withdraw()
+        self.tela_principal = Toplevel(self.janela)
+        self.tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
+        consultar_estoque.Tela(self.tela_principal)
 
     def Cadastrar_produtos(self, event):
         print("Cadastrar")
