@@ -15,7 +15,7 @@ class Tela:
         largura_da_janela = self.janela.winfo_screenwidth()
         altura_da_janela = self.janela.winfo_screenheight()
         janela_width = 250
-        janela_height = 200
+        janela_height = 250
         x = (largura_da_janela - janela_width) // 2
         y = (altura_da_janela - janela_height) // 2
           #Configuração da janela

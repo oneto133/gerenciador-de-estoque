@@ -7,7 +7,8 @@ import tela_inicial
 class Tela: 
     def __init__(self, janela):
         self.janela = janela
-        self.janela.title("Consulta de estoque")
+        self.janela.title("Cadastrar")
+        self.janela.configure(bg="white")
 
         #configurações da tela
             #Tamanho da janela
@@ -123,7 +124,7 @@ class Tela:
             self.quantidade.config(text=f"Quantidade: {pesquisar[3]}", font=("Arial", 12, "bold"))
             Frame(self.frame_de_resultado, height=2, width=350, bg='black').place(x=-10, y=130)
         except TypeError as e:
-            self.descrição.config(text="Nenhum ítem encontrado!")
+            self.descrição.config(text="Nenhum ítem encotrado!")
             
 
     def Cadastrar_produtos(self, event):

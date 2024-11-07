@@ -108,8 +108,9 @@ class consulta:
                 inserir_dados = text(f"select descricao, codigo_interno, ean, quantidade from estoque where {campo} = '{consulta}'")
                 result = await conn.execute(inserir_dados)
                 for row in result:
+                    linha = str(row).replace("'", "")
                     with open("resultado.csv", "w") as arquivo:
-                        arquivo.write(f'descricao,codigo_interno,ean,quantidade\n{self.tratar_resultado_de_consulta(row)}')
+                        arquivo.write(f'descricao,codigo_interno,ean,quantidade\n{self.tratar_resultado_de_consulta(linha)}')
                     df = pd.read_csv('resultado.csv')
                     descricao = df['descricao']
                     codigo_interno = df['codigo_interno']
@@ -131,7 +132,7 @@ class consulta:
     def tratar_resultado_de_consulta(self, dado):
 
         self.dado = str(dado)
-        return self.dado[2:-3]
+        return self.dado[1:-1]
             
 
 
@@ -151,14 +152,14 @@ if __name__ == '__main__':
     asyncio.run(main())'''
 
     '''async def main():
-        cadastrar = Cadastrar_produtos(descrição='teste', ean='1234567897894')
+        cadastrar = Cadastrar_produtos(codigo_interno='123459', descrição='teste', ean='1234567897894', quantidade=4)
         resultado = await cadastrar.inserir_dados()
         print(resultado)
     asyncio.run(main())'''
 
     async def main():
         consultar = consulta()
-        resultado = await consultar.Consultar_Estoque(consulta="123456")
-        print(resultado[1])
+        resultado = await consultar.Consultar_Estoque(consulta="123458")
+        print(resultado[3])
     asyncio.run(main())
 
