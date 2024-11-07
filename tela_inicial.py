@@ -1,5 +1,6 @@
 from tkinter import *
 import consultar_estoque
+import cadastrar_produtos
 from Funções import Graficos
 
 class Tela:
@@ -69,13 +70,16 @@ class Tela:
     def Consultar_Estoque(self, event):
         print("Consultar")
         self.janela.withdraw()
-        self.tela_principal = Toplevel(self.janela)
-        self.tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
-        consultar_estoque.Tela(self.tela_principal)
+        tela_principal = Toplevel(self.janela)
+        tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
+        consultar_estoque.Tela(tela_principal)
 
     def Cadastrar_produtos(self, event):
         print("Cadastrar")
-
+        self.janela.withdraw()
+        tela_principal = Toplevel(self.janela)
+        tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
+        cadastrar_produtos.Tela(tela_principal)
 
     def Movimentações(self, event):
         print("Movimentar")

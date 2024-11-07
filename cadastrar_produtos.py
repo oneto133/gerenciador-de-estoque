@@ -20,80 +20,53 @@ class Tela:
         y = (altura_da_janela - janela_height) // 2
           #Configuração da janela
         self.janela.geometry(f'{janela_width}x{janela_height}+{x}+{y}')
-        #self.janela.resizable(False, False)
+        self.janela.resizable(False, False)
 
 
         #elementos da tela
             #Adicionando imagem ao botão de pesquisa
-        self.realizar_pesquisa = Entry(self.janela, width=50) 
-        self.realizar_pesquisa.focus_set()
         try:
-            self.imagem = Image.open(r'imagens/download.png')
+            self.label = Label(self.janela, width=49)
+            self.imagem = Image.open(r'imagens/voltar.png')
             self.imagem = self.imagem.resize((30, 30))
-            self.foto= ImageTk.PhotoImage(self.imagem)
+            self.imagem_voltar = ImageTk.PhotoImage(self.imagem)
         except:
-            self.foto = None
-        
-
-        self.imagem = Image.open(r'imagens/voltar.png')
-        self.imagem = self.imagem.resize((30, 30))
-        self.imagem_voltar = ImageTk.PhotoImage(self.imagem)
-
-
-
-        self.lupa = Label(self.janela, image=self.foto, cursor="hand2")
+            self.imagem_voltar = None
         
 
         #frames
         self.frame_superior = Frame(self.janela, bg='black')
-        self.frame_de_resultado = Frame(self.janela, bg='blue', width=300, height=300)
         self.pontinhos_do_frame = Label(self.frame_superior, text="⋮", width=2, bg="black", fg="white",
         cursor="hand2", font=("Arial", 20))
-        self.consulta_de_estoque = Label(self.frame_superior, text='Consultar estoque',
+        self.cadastrar_produtos = Label(self.frame_superior, text='Cadastrar Produtos',
         width=20, height=2, fg="white", bg="black", font=("Arial", 12, "bold"))
 
         #outros
         self.voltar = Button(self.frame_superior, image=self.imagem_voltar, command=self.tela_inicial).pack(side="left")
 
-            #resultado da pesquisa
-        self.descrição = Label(self.frame_de_resultado, text="", bg='blue', fg='white',
-        font=("Arial", 20, "bold"))
-        self.codigo_interno = Label(self.frame_de_resultado, text="", bg='blue', fg='white')
-        self.ean = Label(self.frame_de_resultado, text="", bg='blue', fg='white', font=("Arial", 10, "bold"))
-        self.quantidade = Label(self.frame_de_resultado, text="", bg='blue', fg='white')
 
         
         #menu
         self.menu = Menu(self.janela, tearoff=0)
         self.menu.add_command(label="Login", command=lambda: print("login"))
         self.menu.add_separator()
-        self.menu.add_command(label="Sair", command=lambda: print("Sair"))
-
+        self.menu.add_command(label="Sair", command=self.fechar_programa)
 
         #Posicionando os elementos da tela
             #grid()
-        self.realizar_pesquisa.grid(row=4, column=1, padx=50, pady=7)
-        self.frame_de_resultado.grid(row=5, column=1)
+
+        self.label.grid(row=1, column=1, padx=30)
         self.frame_superior.grid(row=1, column=1, sticky="ew")
-        self.lupa.place(x=360, y=39)
-        
+
             #place()
-        self.descrição.place(x=20, y=30)
-        self.consulta_de_estoque.place(x=100, y=-2)
-        self.codigo_interno.place(x=20, y=80)
-        self.ean.place(x=20, y=100)
-        self.quantidade.place(x=180, y=100)
+        self.cadastrar_produtos.place(x=100, y=-2)
 
             #pack()
         self.pontinhos_do_frame.pack(side="right")
 
-
         #Pegar eventos
-
-        self.lupa.bind("<Button-1>", lambda e: Thread(target=self.consultar).start())
         self.pontinhos_do_frame.bind("<Button-1>", self.Opções)
-        self.realizar_pesquisa.bind("<Return>", lambda e: Thread(target=self.consultar).start())
-        
+
     def fechar_programa(self):
         self.janela.quit()
         self.janela.destroy()

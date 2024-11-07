@@ -19,7 +19,7 @@ class Tela:
         y = (altura_da_janela - janela_height) // 2
           #Configuração da janela
         self.janela.geometry(f'{janela_width}x{janela_height}+{x}+{y}')
-        #self.janela.resizable(False, False)
+        self.janela.resizable(False, False)
 
 
         #elementos da tela
@@ -32,13 +32,14 @@ class Tela:
             self.foto= ImageTk.PhotoImage(self.imagem)
         except:
             self.foto = None
+        try:
+            self.label = Label(self.janela, width=49)
+            self.imagem = Image.open(r'imagens/voltar.png')
+            self.imagem = self.imagem.resize((30, 30))
+            self.imagem_voltar = ImageTk.PhotoImage(self.imagem)
+        except:
+            self.imagem_voltar = None
         
-
-        self.imagem = Image.open(r'imagens/voltar.png')
-        self.imagem = self.imagem.resize((30, 30))
-        self.imagem_voltar = ImageTk.PhotoImage(self.imagem)
-
-
 
         self.lupa = Label(self.janela, image=self.foto, cursor="hand2")
         
@@ -66,7 +67,7 @@ class Tela:
         self.menu = Menu(self.janela, tearoff=0)
         self.menu.add_command(label="Login", command=lambda: print("login"))
         self.menu.add_separator()
-        self.menu.add_command(label="Sair", command=lambda: print("Sair"))
+        self.menu.add_command(label="Sair", command=self.fechar_programa)
 
 
         #Posicionando os elementos da tela
