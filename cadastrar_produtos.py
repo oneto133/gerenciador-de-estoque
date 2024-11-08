@@ -1,32 +1,62 @@
 from tkinter import *
+from tkinter import ttk
 from PIL import ImageTk, Image
-from connection_with_db import consulta
+from connection_with_db import Cadastrar_produtos
 import asyncio
 from threading import Thread
 import tela_inicial
+import re
+import pandas as pd
 class Tela: 
     def __init__(self, janela):
         self.janela = janela
         self.janela.title("Cadastrar")
-        self.janela.configure(bg="white")
+        self.janela.configure(bg="lightblue")
 
         #configurações da tela
             #Tamanho da janela
         largura_da_janela = self.janela.winfo_screenwidth()
         altura_da_janela = self.janela.winfo_screenheight()
-        janela_width = 400
-        janela_height = 400
+        janela_width = 600
+        janela_height = 600
         x = (largura_da_janela - janela_width) // 2
         y = (altura_da_janela - janela_height) // 2
-          #Configuração da janela
+        #Configuração da janela
         self.janela.geometry(f'{janela_width}x{janela_height}+{x}+{y}')
         self.janela.resizable(False, False)
 
+        df = pd.read_csv(r"csv/combobox.csv", header=None)
+
+        # Converter cada coluna para uma lista e armazenar em um dicionário
+        colunas = {coluna: df[coluna].astype(str).tolist() for coluna in df.columns}
+        combobox = []
+        # Exibir o resultado
+        for indice, lista in colunas.items():
+            combobox.append(lista)
+
 
         #elementos da tela
-            #Adicionando imagem ao botão de pesquisa
+        self.label = Label(self.janela, width=77)
+        self.descrição = Label(self.janela, text="Descrição", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=5, y=40)
+        self.descrição_entry = Entry(self.janela, width=60, highlightcolor='black')
+        self.código_interno = Label(self.janela, text="Código interno", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=5, y=80)
+        self.código_interno_entry = Entry(self.janela, width=20, highlightcolor='black', validate="key", validatecommand=(self.janela.register(self.validação), '%P', 6))
+        self.ean = self.código_interno = Label(self.janela, text="EAN", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=150, y=80)
+        self.ean_entry = Entry(self.janela, width=20, highlightcolor='black',
+        validate='key', validatecommand=(self.janela.register(self.validação), '%P', 13))
+        self.preco = Label(self.janela, text="Preço (un.)", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=5, y=120)
+        self.preco_entry = Entry(self.janela, width=20, highlightcolor='black',
+        validate='key', validatecommand=(self.janela.register(self.Validar_preço), '%P'))
+        self.quantidade = Label(self.janela, text="Quantidade em estoque", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=150, y=120)
+        self.quantidade_entry = Entry(self.janela, width=20, highlightcolor='black', validate='key', validatecommand=(self.janela.register(self.validação), '%P', 5))
+        self.categoria = Label(self.janela, text="Categoria", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=5, y=160)
+        self.categoria_entry = ttk.Combobox(self.janela, width=20, values=combobox)
+        self.observações = Label(self.janela, text="Obs.", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=5, y=200)
+        self.observações_texto = Text(self.janela, width=70, height=8)
+        self.button = Button(self.janela, text='Cadastrar', command=self.run_cadastrar_produtos,
+        font=('Arial', 13, 'bold')).place(x=250, y=400)
         try:
-            self.label = Label(self.janela, width=49)
+            
             self.imagem = Image.open(r'imagens/voltar.png')
             self.imagem = self.imagem.resize((30, 30))
             self.imagem_voltar = ImageTk.PhotoImage(self.imagem)
@@ -43,9 +73,7 @@ class Tela:
 
         #outros
         self.voltar = Button(self.frame_superior, image=self.imagem_voltar, command=self.tela_inicial).pack(side="left")
-
-
-        
+  
         #menu
         self.menu = Menu(self.janela, tearoff=0)
         self.menu.add_command(label="Login", command=lambda: print("login"))
@@ -59,13 +87,27 @@ class Tela:
         self.frame_superior.grid(row=1, column=1, sticky="ew")
 
             #place()
-        self.cadastrar_produtos.place(x=100, y=-2)
+        self.cadastrar_produtos.place(x=200, y=-2)
+        self.descrição_entry.place(x=5, y=60)
+        self.código_interno_entry.place(x=5, y=100)
+        self.ean_entry.place(x=150, y=100)
+        self.preco_entry.place(x=5, y=140)
+        self.quantidade_entry.place(x=150, y=140)
+        self.observações_texto.place(x=5, y=220)
+        self.categoria_entry.place(x=5, y=180)
 
             #pack()
         self.pontinhos_do_frame.pack(side="right")
 
         #Pegar eventos
         self.pontinhos_do_frame.bind("<Button-1>", self.Opções)
+        self.categoria_entry.set("Selecionar")
+        self.categoria_entry.bind("<<ComboboxSelected>>", self.seleção)
+
+    def seleção(self, event):
+        seleção = self.categoria_entry.get()
+        if seleção == "Cadastrar+":
+            print("Cadastre")
 
     def fechar_programa(self):
         self.janela.quit()
@@ -75,40 +117,42 @@ class Tela:
         self.janela.withdraw()
         self.tela_principal = Toplevel(self.janela)
         self.tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
-        tela_inicial.Tela(self.tela_principal)
-    
-    def consultar(self):
-        self.descrição.config(text="Carregando...", font=("Arial", 10))
-        asyncio.run(self.Consultar_Produtos())    
+        tela_inicial.Tela(self.tela_principal)  
 
-    async def Consultar_Produtos(self):
-        try:
-            consultar = consulta()
-            dados = self.realizar_pesquisa.get()
-            pesquisar = await consultar.Consultar_Estoque(consulta=dados)
-            self.descrição.config(text=pesquisar[0], font=("Arial", 20, "bold"))
-            if pesquisar[1] == "<":
-                interno = "000000"
-            else:
-                interno = pesquisar[1]
+    def run_cadastrar_produtos(self):
+        Thread(target=lambda: asyncio.run(self.cadastrar_produtoss())).start()
 
-            self.codigo_interno.config(text=interno)
-            self.ean.config(text=pesquisar[2])
-            self.quantidade.config(text=f"Quantidade: {pesquisar[3]}", font=("Arial", 12, "bold"))
-            Frame(self.frame_de_resultado, height=2, width=350, bg='black').place(x=-10, y=130)
-        except TypeError as e:
-            self.descrição.config(text="Nenhum ítem encotrado!")
-            
+    def validação(self, P, max, preço=False):
+        if len(P) <= int(max) and re.match(r"^\d*$", P):
+            return True
+        else:
+            return False
 
-    def Cadastrar_produtos(self, event):
-        print("Cadastrar")
+    def Validar_preço(self, P):
+    # Limita a entrada a números e um único ponto decimal
+        if re.match(r"^\d*\.?\d{0,2}$", P):
+            # Insere o ponto decimal após os dois primeiros dígitos (ajuste conforme necessário)
+            if len(P) == 2 and '.' not in P:
+                return P + '.'
+            return True 
+        else:
+            return False
 
-
-    def Movimentações(self, event):
-        print("Movimentar")
-
-    def Logística(self, event):
-        print("Logística")
+    async def cadastrar_produtoss(self):
+        if str(self.código_interno_entry.get())== "" or str(self.ean_entry.get()) == "" or self.descrição_entry.get() == "":
+            print("Não cadastrado! campos vazios")
+        else:
+            self.mensagem = Label(self.janela, text="", bg="lightblue", fg='red')
+            self.mensagem.place(x=200, y=450)
+            cadastro = Cadastrar_produtos()
+            self.mensagem.config(text="Carregando...", width=29)
+            cadastrar = await cadastro.inserir_dados(codigo_interno=str(self.código_interno_entry.get()),
+            ean=str(self.ean_entry.get()), descrição=str(self.descrição_entry.get()),
+            observações=str(self.observações_texto.get('1.0', END)), preco=float(self.preco_entry.get()),
+            quantidade=str(self.quantidade_entry.get()), categoria=str(self.categoria_entry.get()))
+            self.descrição_entry.config(textvariable=(''))
+            print(cadastrar)
+            self.mensagem.config(text="Dados cadastrados com sucesso", width=29)
 
     def Opções(self, event):
         self.menu.post(event.x_root, event.y_root)

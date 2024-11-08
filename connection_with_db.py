@@ -51,15 +51,20 @@ class Query():
 
 
 class Cadastrar_produtos:
-    hora = Horarios()
-    data = hora.data_atual()
-    def __init__(self, conexão="//postgres:M7cIWJYjxBodNojL@uncertainly-pretty-chimaera.data-1.use1.tembo.io:5432/postgres",
-    codigo_interno=None, ean="", descrição="", preco=10.00, quantidade=1, unidade_medida="", categoria="", data_adicao=data,
-    ultima_venda="1999-12-24", fornecedor="", observações=""):
+    
+    def __init__(self, conexão="//postgres:M7cIWJYjxBodNojL@uncertainly-pretty-chimaera.data-1.use1.tembo.io:5432/postgres"):
 
     #Adicionando os parâmetros a variáveis
+
+        self.hora = Horarios()
+        self.data = self.hora.data_atual()
         self.async_engine = create_async_engine(f'postgresql+asyncpg:{conexão}')
         self.async_session = async_sessionmaker(self.async_engine, expire_on_commit=False)
+
+
+    async def inserir_dados(self, codigo_interno=None, ean="", descrição="", preco=10.00, quantidade=1, unidade_medida="", categoria="", 
+    ultima_venda="1999-12-24", fornecedor="", observações=""):
+
         self.codigo_interno = codigo_interno
         self.ean = ean
         self.descrição = descrição
@@ -67,18 +72,18 @@ class Cadastrar_produtos:
         self.quantidade = quantidade
         self.unidade_medida = unidade_medida
         self.categoria = categoria
-        self.data_adicao = data_adicao
         self.ultima_venda = ultima_venda
         self.fornecedor = fornecedor
         self.observações = observações
 
-    async def inserir_dados(self):
+
+
         try:
             async with self.async_session() as conn:
                 inserir_dados = text("INSERT INTO estoque (codigo_interno, ean, descricao, preco,"
                 "quantidade, unidade_medida, categoria, data_adicao, ultima_venda, fornecedor,"
                 f"observacoes) VALUES ('{self.codigo_interno}', '{self.ean}', '{self.descrição}', {self.preco}, {self.quantidade},"
-                f"'{self.unidade_medida}', '{self.categoria}', '{self.data_adicao}', '{self.ultima_venda}', '{self.fornecedor}',"
+                f"'{self.unidade_medida}', '{self.categoria}', '{self.data}', '{self.ultima_venda}', '{self.fornecedor}',"
                 f"'{self.observações}')")
                 result = await conn.execute(inserir_dados)
                 await conn.commit()
@@ -109,7 +114,7 @@ class consulta:
                 result = await conn.execute(inserir_dados)
                 for row in result:
                     linha = str(row).replace("'", "")
-                    with open("resultado.csv", "w") as arquivo:
+                    with open(r"csv/resultado.csv", "w") as arquivo:
                         arquivo.write(f'descricao,codigo_interno,ean,quantidade\n{self.tratar_resultado_de_consulta(linha)}')
                     df = pd.read_csv('resultado.csv')
                     descricao = df['descricao']
