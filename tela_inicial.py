@@ -1,6 +1,7 @@
 from tkinter import *
 import consultar_estoque
 import cadastrar_produtos
+import movimentar_estoque
 from Funções import Graficos
 
 class Tela:
@@ -69,24 +70,25 @@ class Tela:
         self.janela.destroy()
 
     def Consultar_Estoque(self, event):
-        print("Consultar")
         self.janela.withdraw()
         tela_principal = Toplevel(self.janela)
         tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
         consultar_estoque.Tela(tela_principal)
 
     def Cadastrar_produtos(self, event):
-        print("Cadastrar")
         self.janela.withdraw()
         tela_principal = Toplevel(self.janela)
         tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
         cadastrar_produtos.Tela(tela_principal)
 
     def Movimentações(self, event):
-        print("Movimentar")
+        self.janela.withdraw()
+        tela = Toplevel(self.janela)
+        tela.protocol("WM_DELETE_WINDOW", self.fechar_programa)
+        movimentar_estoque.Tela(tela)
 
-    def Logística(self, event):
-        print("Logística")
+    def Relatórios(self, event):
+        print("Relatórios")
 
     def Opções(self, event):
         self.menu.post(event.x_root, event.y_root)

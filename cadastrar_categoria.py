@@ -36,11 +36,8 @@ class janela:
                 self.fechar_e_voltar()
 
     def fechar_e_voltar(self):
-        from cadastrar_produtos import Tela
         self.janela.withdraw()
-        self.tela_principal = Toplevel(self.janela)
-        self.tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
-        Tela(self.tela_principal)
+        self.janela.destroy()
         messagebox.showinfo("Voltando a tela anterior", f"{self.categoria_nova} cadastrado com sucesso! Feche e reinicie o programa")
 
     def fechar_programa(self):
