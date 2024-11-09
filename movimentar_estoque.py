@@ -112,15 +112,22 @@ class Tela:
     async def movimentar(self):
         self.Carregando.config(text="Carregando...")
         consultar = consulta()
-        execução = await consultar.Atualizar_Estoque(int(self.quantidade_entry.get()), self.código_interno_entry.get())
+        execução = await consultar.Atualizar_Estoque(quantidade_a_ser_reduzida=int(self.quantidade_entry.get()), codigo_interno=str(self.código_interno_entry.get()),
+        número_do_pedido=str(self.numero_do_pedido_entry.get()), tipo=str(self.categoria_entry.get()), observacoes=str(self.observações_texto.get('1.0', END)))
         try:
             valor = execução[201:209]
             if valor == "negativo":
                 messagebox.showinfo("Estoque insuficiente","Não pode faturar quantidade que não existe em estoque!")
                 self.quantidade_entry.delete(0, END)
-        except:
+        except Exception as e:
+            print(e)
             messagebox.showinfo("Movimentado!", f"Abra a aba de relatório para verificar os produtos movimentados para o {self.categoria_entry.get()}")
+        try:
+            messagebox.showinfo("Movimentado!", f"Abra a aba de relatório para verificar os produtos movimentados para o {self.categoria_entry.get()}")
+        except Exception as e:
+            print(e)
         self.Carregando.config(text="")
+        print(execução)
     def Opções(self, event):
         self.menu.post(event.x_root, event.y_root)
 

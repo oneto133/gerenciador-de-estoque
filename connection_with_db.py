@@ -134,13 +134,17 @@ class consulta:
         except Exception as e:
             return(f"Erro inesperado: {e}")
 
-    async def Atualizar_Estoque(self, quantidade_a_reduzida, código_interno):
+    async def Atualizar_Estoque(self,codigo_interno, quantidade_a_ser_reduzida, número_do_pedido, tipo="Faturamento", observacoes=None):
         try:
             async with self.async_session() as conn:
-                reduzir_estoque = text(f"update estoque set quantidade = quantidade - {quantidade_a_reduzida} where codigo_interno = '{código_interno}';")
-                result = await conn.execute(reduzir_estoque, {'quantidade': quantidade_a_reduzida, 'codigo_interno': código_interno})
+                reduzir_estoque = text(f"update estoque set quantidade = quantidade - {quantidade_a_ser_reduzida} where codigo_interno = '{codigo_interno}';")
+                resultado = await conn.execute(reduzir_estoque)
+
+                Faturamento = text(f"insert into faturammento (codigo_interno, quantidade, tipo, pedido, observacoes) values ('{codigo_interno}', {quantidade_a_ser_reduzida}, '{tipo}', '{número_do_pedido}', '{observacoes}');")
+                result = await conn.execute(Faturamento)
+
                 await conn.commit()  # Confirma as alterações
-                return result
+                return result, resultado
 
         except OperationalError as e:
             return(f"Erro de conexão ou sintaxe SQL: {e}")
@@ -150,6 +154,20 @@ class consulta:
             return (f"Erro de conexão: {e}")
         except Exception as e:
             return(f"Erro inesperado: {e}")
+
+    async def Faturamento(self, código_interno, quantidade=int(1), tipo="Faturamento", número_do_pedido=None, observações=None):
+        try:
+            async with self.async_session() as conn:
+                reduzir_estoque = text(f"insert into faturamento (codigo_interno, quantidade, tipo, numero_do_pedido) values '{codigo_interno}', {quantidade}, {tipo}, {número_do_pedido};")
+                result = await conn.execute(reduzir_estoque)
+                await conn.commit()  # Confirma as alterações
+                return result
+        
+        except Exception as e:
+            print(e)
+
+
+
 
 
 
@@ -188,7 +206,7 @@ if __name__ == '__main__':
     asyncio.run(main())'''
     async def main():
         alterar = consulta()
-        resultado = await alterar.Atualizar_Estoque(1, '123456')
+        resultado = await alterar.Atualizar_Estoque(codigo_interno='123456', quantidade_a_ser_reduzida=1,número_do_pedido='1234567891')
         print(resultado)
     asyncio.run(main())
 
