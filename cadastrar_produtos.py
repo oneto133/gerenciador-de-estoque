@@ -7,6 +7,7 @@ from threading import Thread
 import tela_inicial
 import re
 import pandas as pd
+from cadastrar_categoria import janela
 class Tela: 
     def __init__(self, janela):
         self.janela = janela
@@ -25,14 +26,14 @@ class Tela:
         self.janela.geometry(f'{janela_width}x{janela_height}+{x}+{y}')
         self.janela.resizable(False, False)
 
-        df = pd.read_csv(r"csv/combobox.csv", header=None)
+        df = pd.read_csv(r"csv/combobox.csv", header=None, encoding='latin1')
 
         # Converter cada coluna para uma lista e armazenar em um dicionário
         colunas = {coluna: df[coluna].astype(str).tolist() for coluna in df.columns}
-        combobox = []
+        self.combobox = []
         # Exibir o resultado
         for indice, lista in colunas.items():
-            combobox.append(lista)
+            self.combobox.append(lista)
 
 
         #elementos da tela
@@ -50,7 +51,7 @@ class Tela:
         self.quantidade = Label(self.janela, text="Quantidade em estoque", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=150, y=120)
         self.quantidade_entry = Entry(self.janela, width=20, highlightcolor='black', validate='key', validatecommand=(self.janela.register(self.validação), '%P', 5))
         self.categoria = Label(self.janela, text="Categoria", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=5, y=160)
-        self.categoria_entry = ttk.Combobox(self.janela, width=20, values=combobox)
+        self.categoria_entry = ttk.Combobox(self.janela, width=20, values=self.combobox)
         self.observações = Label(self.janela, text="Obs.", bg="lightblue", fg='black', font=('Arial', 10, 'bold')).place(x=5, y=200)
         self.observações_texto = Text(self.janela, width=70, height=8)
         self.button = Button(self.janela, text='Cadastrar', command=self.run_cadastrar_produtos,
@@ -107,7 +108,11 @@ class Tela:
     def seleção(self, event):
         seleção = self.categoria_entry.get()
         if seleção == "Cadastrar+":
-            print("Cadastre")
+            tela_principal = Toplevel(self.janela)
+            janela(tela_principal)
+            self.categoria_entry.set("Selecionar")
+            self.categoria_entry.config(values=self.combobox)
+            
 
     def fechar_programa(self):
         self.janela.quit()

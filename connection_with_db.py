@@ -116,7 +116,7 @@ class consulta:
                     linha = str(row).replace("'", "")
                     with open(r"csv/resultado.csv", "w") as arquivo:
                         arquivo.write(f'descricao,codigo_interno,ean,quantidade\n{self.tratar_resultado_de_consulta(linha)}')
-                    df = pd.read_csv('resultado.csv')
+                    df = pd.read_csv(r'csv/resultado.csv')
                     descricao = df['descricao']
                     codigo_interno = df['codigo_interno']
                     if codigo_interno[0] == " ''":
@@ -133,6 +133,25 @@ class consulta:
             return (f"Erro de conexão: {e}")
         except Exception as e:
             return(f"Erro inesperado: {e}")
+
+    async def Atualizar_Estoque(self, quantidade_a_reduzida, código_interno):
+        try:
+            async with self.async_session() as conn:
+                reduzir_estoque = text(f"update estoque set quantidade = quantidade - {quantidade_a_reduzida} where codigo_interno = '{código_interno}';")
+                result = await conn.execute(reduzir_estoque, {'quantidade': quantidade_a_reduzida, 'codigo_interno': código_interno})
+                await conn.commit()  # Confirma as alterações
+                return result
+
+        except OperationalError as e:
+            return(f"Erro de conexão ou sintaxe SQL: {e}")
+        except IntegrityError as e:
+            return(f"Violação de integridade: {e}")
+        except ConnectionResetError as e:
+            return (f"Erro de conexão: {e}")
+        except Exception as e:
+            return(f"Erro inesperado: {e}")
+
+
 
     def tratar_resultado_de_consulta(self, dado):
 
@@ -162,9 +181,16 @@ if __name__ == '__main__':
         print(resultado)
     asyncio.run(main())'''
 
-    async def main():
+    '''async def main():
         consultar = consulta()
         resultado = await consultar.Consultar_Estoque(consulta="123458")
-        print(resultado[3])
+        print(resultado)
+    asyncio.run(main())'''
+    async def main():
+        alterar = consulta()
+        resultado = await alterar.Atualizar_Estoque(1, '123456')
+        print(resultado)
     asyncio.run(main())
+
+
 

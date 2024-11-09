@@ -106,6 +106,9 @@ class Tela:
     
     def consultar(self):
         self.descrição.config(text="Carregando...", font=("Arial", 10))
+        self.ean.config(text="")
+        self.codigo_interno.config(text="")
+        self.quantidade.config(text="")
         asyncio.run(self.Consultar_Produtos())    
 
     async def Consultar_Produtos(self):
@@ -113,16 +116,20 @@ class Tela:
             consultar = consulta()
             dados = self.realizar_pesquisa.get()
             pesquisar = await consultar.Consultar_Estoque(consulta=dados)
-            self.descrição.config(text=pesquisar[0], font=("Arial", 20, "bold"))
-            if pesquisar[1] == "<":
-                interno = "000000"
+            if pesquisar[0:15] == "de con":
+                self.descrição.config(text="erro de conexão", font=("Arial", 20, 'bold') )
             else:
-                interno = pesquisar[1]
+                self.descrição.config(text=pesquisar[0], font=("Arial", 20, "bold"))
+                if pesquisar[1] == "<":
+                    interno = "000000"
+                else:
+                    interno = pesquisar[1]
 
-            self.codigo_interno.config(text=interno)
-            self.ean.config(text=pesquisar[2])
-            self.quantidade.config(text=f"Quantidade: {pesquisar[3]}", font=("Arial", 12, "bold"))
-            Frame(self.frame_de_resultado, height=2, width=350, bg='black').place(x=-10, y=130)
+                self.codigo_interno.config(text=interno)
+                self.ean.config(text=pesquisar[2])
+                self.quantidade.config(text=f"Quantidade: {pesquisar[3]}", font=("Arial", 12, "bold"))
+                Frame(self.frame_de_resultado, height=2, width=350, bg='black').place(x=-10, y=130)
+                print(pesquisar)
         except TypeError as e:
             self.descrição.config(text="Nenhum ítem encontrado!")
             
