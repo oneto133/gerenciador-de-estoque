@@ -2,10 +2,10 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.exc import OperationalError, IntegrityError
 from Funções import Horarios
 import pandas as pd
-
 from sqlalchemy import select, text
 import csv
 import asyncio
+from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
 class Conexao:
     def __init__(self, nome_completo='', nome='', senha='', email=''):
         self.banco = create_engine('postgresql://postgres:M7cIWJYjxBodNojL@uncertainly-pretty-chimaera.data-1.use1.tembo.io:5432/postgres')
@@ -51,20 +51,15 @@ class Query():
 
 
 class Cadastrar_produtos:
-    
+
     def __init__(self, conexão="//postgres:M7cIWJYjxBodNojL@uncertainly-pretty-chimaera.data-1.use1.tembo.io:5432/postgres"):
-
     #Adicionando os parâmetros a variáveis
-
         self.hora = Horarios()
         self.data = self.hora.data_atual()
         self.async_engine = create_async_engine(f'postgresql+asyncpg:{conexão}')
         self.async_session = async_sessionmaker(self.async_engine, expire_on_commit=False)
-
-
     async def inserir_dados(self, codigo_interno=None, ean="", descrição="", preco=10.00, quantidade=1, unidade_medida="", categoria="", 
     ultima_venda="1999-12-24", fornecedor="", observações=""):
-
         self.codigo_interno = codigo_interno
         self.ean = ean
         self.descrição = descrição
@@ -75,8 +70,6 @@ class Cadastrar_produtos:
         self.ultima_venda = ultima_venda
         self.fornecedor = fornecedor
         self.observações = observações
-
-
 
         try:
             async with self.async_session() as conn:
@@ -167,9 +160,23 @@ class consulta:
             print(e)
 
 
+    async def relatorio(self):
+        try:
+            async with self.async_session() as session:
+                # Executa a consulta
+                result = await session.execute(text("SELECT * FROM faturammento"))
 
+                # Converte o resultado para um DataFrame do pandas
+                rows = result.fetchall()
+                columns = result.keys()
+                df = pd.DataFrame(rows, columns=columns)
 
+                # Exporta o DataFrame para um arquivo Excel
+                df.to_excel("relatorio_estoque.xlsx", index=False)
 
+                return "Relatório gerado com sucesso em 'relatorio_estoque.xlsx'"
+        except Exception as e:
+            return f"Erro ao gerar relatório: {e}"
 
     def tratar_resultado_de_consulta(self, dado):
 
@@ -204,10 +211,16 @@ if __name__ == '__main__':
         resultado = await consultar.Consultar_Estoque(consulta="123458")
         print(resultado)
     asyncio.run(main())'''
-    async def main():
+    '''async def main():
         alterar = consulta()
         resultado = await alterar.Atualizar_Estoque(codigo_interno='123456', quantidade_a_ser_reduzida=1,número_do_pedido='1234567891')
         print(resultado)
+    asyncio.run(main())'''
+
+    async def main():
+        consultar = consulta()
+        resultado = await consultar.relatorio()
+
     asyncio.run(main())
 
 
