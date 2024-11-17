@@ -28,19 +28,21 @@ class Tela:
 
 
         #elementos da tela
-        self.consulta_de_estoque = Label(self.janela, text='Consultar estoque', cursor="hand2", width=20, height=2)
+        self.frame_superior = Frame(self.janela, bg='black')
+        self.boas_vindas = Label(self.frame_superior, text="Bem-vindo!", font=("Arial", 10, "bold"), bg="black", fg="white")
+        self.consulta_de_estoque = Label(self.janela, text='Consultar estoque', cursor="hand2", width=18, height=2, font=("Arial", 10, "bold"))
         Frame(self.janela, height=2, bg='black').grid(row = 3, column=1, sticky="ew")
-        self.cadastro_de_produtos = Label(self.janela, text='Cadastrar produtos', cursor="hand2", width=20, height=2) 
+        self.cadastro_de_produtos = Label(self.janela, text='Cadastrar produtos', cursor="hand2", width=18, height=2, font=("Arial", 10, "bold")) 
         Frame(self.janela, height=2, bg='black').grid(row = 5, column=1, sticky="ew")  
         self.movimentações_de_estoque = Label(self.janela, text="Movimentações de estoque", 
-        cursor="hand2", width=20, height=2)
+        cursor="hand2", height=2, font=("Arial", 10, "bold"))
         Frame(self.janela, height=2, bg='black').grid(row = 7, column=1, sticky="ew")
-        self.relatorios = Label(self.janela, text="Relatórios", cursor="hand2", width=20, height=2)
+        self.relatorios = Label(self.janela, text="Relatórios", cursor="hand2", width=18, height=2, font=("Arial", 10, "bold"))
         Frame(self.janela, height=2, bg='black').grid(row = 9, column=1, sticky="ew")
         
 
         #frames
-        self.frame_superior = Frame(self.janela, bg='black')
+        
         self.pontinhos_do_frame = Label(self.frame_superior, text="⋮", width=2, bg="black", fg="white", cursor="hand2")
         
         #menu
@@ -57,6 +59,7 @@ class Tela:
         self.relatorios.grid(row=8, column=1, padx=10, pady=7)
         self.frame_superior.grid(row=1, column=1, sticky="ew")
         self.pontinhos_do_frame.pack(side="right")
+        self.boas_vindas.place(x=87, y=0)
 
 
         #Pegar eventos

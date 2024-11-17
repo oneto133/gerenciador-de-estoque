@@ -64,7 +64,7 @@ class Cadastrar_produtos:
         self.async_engine = create_async_engine(f'postgresql+asyncpg:{conexão}')
         self.async_session = async_sessionmaker(self.async_engine, expire_on_commit=False)
     async def inserir_dados(self, codigo_interno=None, ean="", descrição="", preco=10.00, quantidade=1, unidade_medida="", categoria="", 
-    ultima_venda="1999-12-24", fornecedor="", observações=""):
+    ultima_venda="1999-12-24", fornecedor="", observações="", rua=int(), modulo=int(), nivel=int()):
         self.codigo_interno = codigo_interno
         self.ean = ean
         self.descrição = descrição
@@ -80,9 +80,9 @@ class Cadastrar_produtos:
             async with self.async_session() as conn:
                 inserir_dados = text("INSERT INTO estoque (codigo_interno, ean, descricao, preco,"
                 "quantidade, unidade_medida, categoria, data_adicao, ultima_venda, fornecedor,"
-                f"observacoes) VALUES ('{self.codigo_interno}', '{self.ean}', '{self.descrição}', {self.preco}, {self.quantidade},"
+                f"observacoes, rua, modulo, nivel) VALUES ('{self.codigo_interno}', '{self.ean}', '{self.descrição}', {self.preco}, {self.quantidade},"
                 f"'{self.unidade_medida}', '{self.categoria}', '{self.data}', '{self.ultima_venda}', '{self.fornecedor}',"
-                f"'{self.observações}')")
+                f"'{self.observações}', {int(rua)}, {int(modulo)}, {int(nivel)})")
                 result = await conn.execute(inserir_dados)
                 await conn.commit()
                 return f"Dados inseridos com sucesso!"
@@ -106,14 +106,21 @@ class consulta:
         self.async_session = async_sessionmaker(self.async_engine, expire_on_commit=False)
 
     async def Consultar_Estoque(self, campo="codigo_interno", consulta=None):
+        campo_de_pesquisa = campo
+        consulta = consulta
+        if consulta.strip().isalpha():
+            campo_de_pesquisa = "descricao"
+        consultar = {
+            'codigo': f"select descricao, codigo_interno, ean, quantidade, rua, modulo, nivel from estoque where {campo_de_pesquisa} like '%{consulta}%';"
+        }
         try:
             async with self.async_session() as conn:
-                inserir_dados = text(f"select descricao, codigo_interno, ean, quantidade from estoque where {campo} = '{consulta}'")
+                inserir_dados = text(consultar['codigo'])
                 result = await conn.execute(inserir_dados)
                 for row in result:
                     linha = str(row).replace("'", "")
                     with open(r"csv/resultado.csv", "w") as arquivo:
-                        arquivo.write(f'descricao,codigo_interno,ean,quantidade\n{self.tratar_resultado_de_consulta(linha)}')
+                        arquivo.write(f'descricao,codigo_interno,ean,quantidade,rua,modulo,nivel\n{self.tratar_resultado_de_consulta(linha)}')
                     df = pd.read_csv(r'csv/resultado.csv')
                     descricao = df['descricao']
                     codigo_interno = df['codigo_interno']
@@ -122,7 +129,10 @@ class consulta:
 
                     ean = df['ean']
                     quantidade = df['quantidade']
-                    return descricao[0], codigo_interno[0], ean[0], quantidade[0]
+                    rua = df['rua']
+                    modulo = df['modulo']
+                    nivel = df['nivel']
+                    return descricao[0], codigo_interno[0], ean[0], quantidade[0], rua[0], modulo[0], nivel[0]
         except OperationalError as e:
             return(f"Erro de conexão ou sintaxe SQL: {e}")
         except IntegrityError as e:
@@ -213,14 +223,14 @@ class consulta:
                         c.drawString(margem_esquerda, margem_superior, "Relatório - Dados")
 
                         # Escrever os cabeçalhos das colunas
-                        c.setFont("Helvetica-Bold", 10)
+                        c.setFont("Helvetica-Bold", 9)
                         y = margem_superior - 30  # Ajustar a posição vertical
                         for col in columns:
                             c.drawString(margem_esquerda, y, col)
                             margem_esquerda += 90  # Espaço entre as colunas
 
                         # Escrever os dados
-                        c.setFont("Helvetica", 9)
+                        c.setFont("Helvetica", 8)
                         for index, row in df.iterrows():
                             margem_esquerda = 50  # Resetar para a posição inicial
                             y -= altura_linha  # Mover para a linha abaixo

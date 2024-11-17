@@ -59,10 +59,12 @@ class Tela:
         self.descrição = Label(self.frame_de_resultado, text="", bg='blue', fg='white',
         font=("Arial", 20, "bold"))
         self.codigo_interno = Label(self.frame_de_resultado, text="", bg='blue', fg='white')
-        self.ean = Label(self.frame_de_resultado, text="", bg='blue', fg='white', font=("Arial", 10, "bold"))
+        self.ean = Label(self.frame_de_resultado, text="", bg='blue', fg='white', font=("Roboto", 13, "bold"))
         self.quantidade = Label(self.frame_de_resultado, text="", bg='blue', fg='white')
+        self.rua = Label(self.frame_de_resultado, text="", bg="blue", fg="white")
+        self.modulo = Label(self.frame_de_resultado, text="", bg="blue", fg="white")
+        self.nivel = Label(self.frame_de_resultado, text="", bg="blue", fg="white")
 
-        
         #menu
         self.menu = Menu(self.janela, tearoff=0)
         self.menu.add_command(label="Login", command=lambda: print("login"))
@@ -81,8 +83,12 @@ class Tela:
         self.descrição.place(x=20, y=30)
         self.consulta_de_estoque.place(x=100, y=-2)
         self.codigo_interno.place(x=20, y=80)
-        self.ean.place(x=20, y=100)
-        self.quantidade.place(x=180, y=100)
+        self.ean.place(x=20, y=130)
+        self.quantidade.place(x=180, y=130)
+        self.rua.place(x=20, y=100)
+        self.modulo.place(x=100, y=100)
+        self.nivel.place(x=200, y=100)
+
 
             #pack()
         self.pontinhos_do_frame.pack(side="right")
@@ -109,6 +115,9 @@ class Tela:
         self.ean.config(text="")
         self.codigo_interno.config(text="")
         self.quantidade.config(text="")
+        self.rua.config(text="")
+        self.modulo.config(text="")
+        self.nivel.config(text="")
         asyncio.run(self.Consultar_Produtos())    
 
     async def Consultar_Produtos(self):
@@ -124,11 +133,22 @@ class Tela:
                     interno = "000000"
                 else:
                     interno = pesquisar[1]
-
+                Rua = pesquisar[4]
+                modulo = pesquisar[5]
+                nivel = pesquisar[6]
+                if pesquisar[4] == " None":
+                    Rua = 0
+                if pesquisar[5] == " None":
+                    modulo = 0
+                if pesquisar[6] == " None":
+                    nivel = 0
                 self.codigo_interno.config(text=interno)
                 self.ean.config(text=pesquisar[2])
                 self.quantidade.config(text=f"Quantidade: {pesquisar[3]}", font=("Arial", 12, "bold"))
-                Frame(self.frame_de_resultado, height=2, width=350, bg='black').place(x=-10, y=130)
+                self.rua.config(text=f'Rua: {Rua}', font=('Arial', 12, 'bold'))
+                self.modulo.config(text=f'Módulo: {modulo}', font=("Arial", 12, "bold"))
+                self.nivel.config(text=f'Nível: {nivel}', font=("Arial", 12, "bold") )
+                Frame(self.frame_de_resultado, height=2, width=350, bg='black').place(x=-10, y=200)
                 print(pesquisar)
         except TypeError as e:
             self.descrição.config(text="Nenhum ítem encontrado!")

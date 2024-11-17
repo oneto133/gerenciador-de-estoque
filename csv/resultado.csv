@@ -1,2 +1,2 @@
-descricao,codigo_interno,ean,quantidade
-Produto de teste, 658945, 9874565455448, 20
+descricao,codigo_interno,ean,quantidade,rua,modulo,nivel
+Produto de teste, 123456, 1234567891011, 8, None, None, None
