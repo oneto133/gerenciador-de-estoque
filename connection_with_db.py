@@ -6,6 +6,11 @@ from sqlalchemy import select, text
 import csv
 import asyncio
 from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+from datetime import datetime
+
 class Conexao:
     def __init__(self, nome_completo='', nome='', senha='', email=''):
         self.banco = create_engine('postgresql://postgres:M7cIWJYjxBodNojL@uncertainly-pretty-chimaera.data-1.use1.tembo.io:5432/postgres')
@@ -160,21 +165,67 @@ class consulta:
             print(e)
 
 
-    async def relatorio(self):
+    async def relatorio(self, destino, tipo, código_interno=str(), data_inicio=str(), data_fim=str(), tipo_de_movimentação="Faturamento"):
+        
         try:
             async with self.async_session() as session:
                 # Executa a consulta
-                result = await session.execute(text("SELECT * FROM faturammento"))
+
+                result = await session.execute(text(f"SELECT codigo_interno, quantidade, pedido, tipo, observacoes FROM faturammento WHERE codigo_interno = '{código_interno}' AND data_adicao BETWEEN '{data_inicio}' AND '{data_fim}'"
+                f" AND tipo = '{tipo_de_movimentação}';"))
 
                 # Converte o resultado para um DataFrame do pandas
                 rows = result.fetchall()
                 columns = result.keys()
                 df = pd.DataFrame(rows, columns=columns)
+                if tipo == "xslx":
+                    # Exporta o DataFrame para um arquivo Excel
+                    df.to_excel(f"{destino}/relatorio_estoque.xlsx", index=False)
+                    return f"Relatório gerado com sucesso em '{destino}relatorio_estoque.xlsx'"
+                elif tipo == "csv":
+                    df.to_csv(f"{destino}/relatório_estoque.csv", index=False, encoding="utf-8")
+                    return f"Relatório gerado com sucesso em '{destino}relatorio_estoque.csv'"
+                
+                elif tipo == "pdf":
+                    try:
+                        c = canvas.Canvas(f"{destino}/relatorio_estoque.pdf", pagesize=letter)
+                        largura, altura = letter  # Tamanho da página
 
-                # Exporta o DataFrame para um arquivo Excel
-                df.to_excel("relatorio_estoque.xlsx", index=False)
+                        # Definir as margens e altura inicial
+                        margem_esquerda = 50
+                        margem_superior = altura - 50
+                        altura_linha = 14  # Altura de cada linha
 
-                return "Relatório gerado com sucesso em 'relatorio_estoque.xlsx'"
+                        # Escrever o título
+                        c.setFont("Helvetica-Bold", 14)
+                        c.drawString(margem_esquerda, margem_superior, "Relatório - Dados")
+
+                        # Escrever os cabeçalhos das colunas
+                        c.setFont("Helvetica-Bold", 10)
+                        y = margem_superior - 30  # Ajustar a posição vertical
+                        for col in columns:
+                            c.drawString(margem_esquerda, y, col)
+                            margem_esquerda += 90  # Espaço entre as colunas
+
+                        # Escrever os dados
+                        c.setFont("Helvetica", 9)
+                        for index, row in df.iterrows():
+                            margem_esquerda = 50  # Resetar para a posição inicial
+                            y -= altura_linha  # Mover para a linha abaixo
+                            for valor in row:
+                                c.drawString(margem_esquerda, y, str(valor))
+                                margem_esquerda += 90  # Espaço entre as colunas
+                            if y <= 50:  # Verifica se chegou no final da página
+                                c.showPage()  # Adiciona uma nova página
+                                c.setFont("Helvetica-Bold", 10)
+                                y = altura - 50  # Reseta a altura para o topo
+
+                        # Finalizar o PDF
+                        c.save()
+                        return(f"PDF gerado com sucesso: {destino}/relatorio_estoque.pdf")
+                    except Exception as e:
+                        print(e)
+
         except Exception as e:
             return f"Erro ao gerar relatório: {e}"
 

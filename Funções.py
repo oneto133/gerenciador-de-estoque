@@ -192,6 +192,11 @@ class Funcao():
   def converter_arquivo(self, arquivo):
     cv = pdf(arquivo)
     cv.convert()
+
+  def abrir_gerenciador_de_arquivos_para_destino(self):
+    caminho = filedialog.askdirectory()
+    return caminho
+    
 class Graficos:
   def __init__(self):
     pass
