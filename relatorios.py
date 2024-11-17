@@ -33,6 +33,7 @@ class Tela:
 
         self.movimentação = IntVar()
         self.faturamento = IntVar()
+        self.abrir_arquivo_gerado = IntVar()
         self.valor_inicial = StringVar()
         self.valor_inicial.set("<Selecionar Caminho>")
         self.tipo_de_movimentação = "Faturamento"
@@ -72,6 +73,7 @@ class Tela:
         #Checkbutton
         self.relatorio_faturamento = Checkbutton(self.janela, text="Faturamento", bg="lightblue", variable=self.faturamento, command=self.alternar_caixa_movimentação)
         self.relatorio_movimentação = Checkbutton(self.janela, text="Movimentação entre setores", bg="lightblue", variable=self.movimentação, command=self.alternar_caixa_faturamento)
+        self.abrir_arquivo_depois_gerado = Checkbutton(self.janela, text="Abrir arquivo após gerado?", bg='lightblue', variable=self.abrir_arquivo_gerado)
 
         #DateEntry
         self.data_inicio = DateEntry(self.janela, date_pattern="dd/mm/yyyy", set_date="")
@@ -105,12 +107,13 @@ class Tela:
         self.relatorio_faturamento.place(x=5, y=60)
         self.inicio.place(x=5, y=100)
         self.relatorio_movimentação.place(x=160, y=60)
-        self.label1.place(x=180, y=500)
-        self.relatorio.place(x=260, y=400)
+        self.label1.place(x=250, y=500)
+        self.relatorio.place(x=260, y=400)   
         self.usuário_label.place(x=5, y=200)
         self.usuário_entry.place(x=160, y=200)
         self.botão_destino.place(x=350, y=295)
         self.destino.place(x=30, y=300)
+        self.abrir_arquivo_depois_gerado.place(x=5, y=360)
         
         #pack()
         self.pontinhos_do_frame.pack(side="right")
@@ -148,23 +151,37 @@ class Tela:
             return False
 
     async def gerar_relatorio(self):
+        tipo_de_movimentação = self.tipo_de_movimentação
+        if tipo_de_movimentação == "Faturamento":
+            tipo_de_movimentação == "Faturamento"
+        else:
+            tipo_de_movimentação == "Movimentação entre setores"
         if self.código_interno_entry.get() == "":
             messagebox.showinfo("Código interno não informado", "Por favor, digite um código interno válido para realizar a consulta,"
             "exemplo de código interno: '123456' ")
-        elif self.valor_inicial == "<Selecionar Caminho>":
+        elif self.valor_inicial.get() == "<Selecionar Caminho>":
             messagebox.showerror("Você não selecionou um destino", "Por favor, selecione um destino para continuar com"
             " a geração do relatório")
         
         else:
             data_inicio = str(self.data_inicio.get_date())
             data_fim = str(self.data_fim.get_date())
-            tipo_movimentação = self.tipo_de_movimentação
             consultar = consulta()
             self.label1.config(text="Carregando...")
             gerar = await consultar.relatorio(self.abrir, str(self.formato_combobox.get()).lower(), self.código_interno_entry.get(),
-            data_inicio, data_fim, tipo_movimentação)
-            self.label1.config(text=gerar)
-
+            data_inicio, data_fim, tipo_de_movimentação)
+            self.label1.config(text="")
+            titulo = gerar[:6]
+            if titulo == 'Nenhum':
+                messagebox.showerror("Nenhum resultado!", gerar)
+            elif titulo == "Relató":
+                messagebox.showinfo("Sucesso!", gerar)
+                if self.abrir_arquivo_gerado.get() == 1 and self.formato_combobox.get() != "XLSX":
+                    funcao = Funcao()
+                    arquivo = funcao.abrir_arquivo_gerado(gerar[32:])
+                    self.label1.config(text="Tentando abrir o arquivo.")
+            else:
+                messagebox.showwarning("Atenção!", gerar)
         
     def Opções(self, event):
         self.menu.post(event.x_root, event.y_root)
@@ -172,6 +189,7 @@ class Tela:
     def abrir_gerenciador(self):
         funcao = Funcao()
         self.abrir = funcao.abrir_gerenciador_de_arquivos_para_destino()
+        
         
         if self.abrir != "":
             self.valor_inicial.set(self.abrir)

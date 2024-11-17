@@ -3,13 +3,13 @@ from sqlalchemy.exc import OperationalError, IntegrityError
 from Funções import Horarios
 import pandas as pd
 from sqlalchemy import select, text
-import csv
-import asyncio
+import asyncio, os, csv
 from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from datetime import datetime
+
 
 class Conexao:
     def __init__(self, nome_completo='', nome='', senha='', email=''):
@@ -165,30 +165,42 @@ class consulta:
             print(e)
 
 
-    async def relatorio(self, destino, tipo, código_interno=str(), data_inicio=str(), data_fim=str(), tipo_de_movimentação="Faturamento"):
-        
+    async def relatorio(self, destino, tipo, código_interno=str(),
+    data_inicio=str(), data_fim=str(), tipo_de_movimentação="Faturamento", abrir=0):
+
+        strings = {
+            "consulta": (
+                "SELECT codigo_interno, quantidade, pedido, tipo, observacoes FROM faturammento WHERE"
+                f" codigo_interno = '{código_interno}' AND data_adicao BETWEEN '{data_inicio}' AND '{data_fim}'"
+                f" AND tipo = '{tipo_de_movimentação}';"
+            ),
+            "None": (
+                f"Nenhum resultado a ser retornado quanto ao {tipo_de_movimentação} ou ao período entre {data_inicio} "
+                f"e {data_fim}"
+            ),
+            "destino/caminho": f"{destino}/relatorio_estoque.{tipo}",
+            "sucesso!": f"Relatório gerado com sucesso em {destino}/relatorio_estoque.{tipo}"
+        }
         try:
             async with self.async_session() as session:
-                # Executa a consulta
-
-                result = await session.execute(text(f"SELECT codigo_interno, quantidade, pedido, tipo, observacoes FROM faturammento WHERE codigo_interno = '{código_interno}' AND data_adicao BETWEEN '{data_inicio}' AND '{data_fim}'"
-                f" AND tipo = '{tipo_de_movimentação}';"))
-
-                # Converte o resultado para um DataFrame do pandas
+                result = await session.execute(text(strings['consulta']))
                 rows = result.fetchall()
                 columns = result.keys()
+                if len(rows) == 0:
+                    return strings['None']
                 df = pd.DataFrame(rows, columns=columns)
-                if tipo == "xslx":
-                    # Exporta o DataFrame para um arquivo Excel
-                    df.to_excel(f"{destino}/relatorio_estoque.xlsx", index=False)
-                    return f"Relatório gerado com sucesso em '{destino}relatorio_estoque.xlsx'"
+
+                if tipo == "xlsx":
+                    df.to_excel(strings['destino/caminho'], index=False)
+                    return strings['sucesso!']
+
                 elif tipo == "csv":
-                    df.to_csv(f"{destino}/relatório_estoque.csv", index=False, encoding="utf-8")
-                    return f"Relatório gerado com sucesso em '{destino}relatorio_estoque.csv'"
+                    df.to_csv(strings['destino/caminho'], index=False, encoding="utf-8")
+                    return strings['sucesso!']
                 
                 elif tipo == "pdf":
                     try:
-                        c = canvas.Canvas(f"{destino}/relatorio_estoque.pdf", pagesize=letter)
+                        c = canvas.Canvas(strings['destino/caminho'], pagesize=letter)
                         largura, altura = letter  # Tamanho da página
 
                         # Definir as margens e altura inicial
@@ -222,22 +234,18 @@ class consulta:
 
                         # Finalizar o PDF
                         c.save()
-                        return(f"PDF gerado com sucesso: {destino}/relatorio_estoque.pdf")
+                        return strings['sucesso!']
                     except Exception as e:
-                        print(e)
+                        return e
+                
 
         except Exception as e:
             return f"Erro ao gerar relatório: {e}"
 
     def tratar_resultado_de_consulta(self, dado):
-
         self.dado = str(dado)
         return self.dado[1:-1]
             
-
-
-    
-
 if __name__ == '__main__':
     #adicionando dados
     '''conexao = Conexao()

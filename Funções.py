@@ -1,6 +1,6 @@
 from IPython.display import clear_output
 from time import sleep
-import datetime, pytz, os
+import datetime, pytz, os, platform
 from tkinter import filedialog, messagebox
 from pdf2docx import Converter as pdf
 from PIL import ImageTk, Image
@@ -196,6 +196,22 @@ class Funcao():
   def abrir_gerenciador_de_arquivos_para_destino(self):
     caminho = filedialog.askdirectory()
     return caminho
+  
+  def abrir_arquivo_gerado(self, caminho):
+    sistema = platform.system()
+    try:
+      if sistema == "Windows":
+        os.startfile(caminho)
+      
+      elif sistema == "Darwin":
+        os.system(f"open '{caminho}'")
+      
+      else:
+        os.system(f"xdg-open '{caminho}'")
+
+    except Exception as e:
+      return e
+
     
 class Graficos:
   def __init__(self):
