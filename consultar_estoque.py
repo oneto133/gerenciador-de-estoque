@@ -67,7 +67,7 @@ class Tela:
 
         #menu
         self.menu = Menu(self.janela, tearoff=0)
-        self.menu.add_command(label="Login", command=lambda: print("login"))
+        self.menu.add_command(label="Login", command=self.abrir_tela_de_login)
         self.menu.add_separator()
         self.menu.add_command(label="Sair", command=self.fechar_programa)
 
@@ -99,6 +99,13 @@ class Tela:
         self.lupa.bind("<Button-1>", lambda e: Thread(target=self.consultar).start())
         self.pontinhos_do_frame.bind("<Button-1>", self.Opções)
         self.realizar_pesquisa.bind("<Return>", lambda e: Thread(target=self.consultar).start())
+
+    def abrir_tela_de_login(self):
+        from Tela_login import Tela_De_Login
+        self.janela.withdraw()
+        tela_principal = Toplevel(self.janela)
+        tela_principal.protocol("WM_DELETE_WINDOW", self.fechar_programa)
+        Tela_De_Login(tela_principal)
         
     def fechar_programa(self):
         self.janela.quit()
